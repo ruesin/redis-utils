@@ -1,0 +1,23 @@
+{
+    "name": "ruesin/redis-utils",
+    "description": "Redis utils classes",
+    "keywords": ["utils", "redis"],
+    "homepage": "https://github.com/ruesin",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Ruesin Liu",
+            "email": "ruesin@gmail.com"
+        }
+    ],
+    "require": {
+        "ruesin/config-utils":"dev-master",
+        "predis/predis": "^1.1",
+        "ext-json" : "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ruesin\\Utils\\Redis\\":"src/"
+        }
+    }
+}

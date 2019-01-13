@@ -1,0 +1,5 @@
+.idea
+vendor/
+*.txt
+composer.lock
+test.php
