@@ -1,5 +1,5 @@
 {
-    "name": "ruesin/redis-utils",
+    "name": "ruesin/redis",
     "description": "Redis utils classes",
     "keywords": ["utils", "redis"],
     "homepage": "https://github.com/ruesin",
@@ -11,13 +11,11 @@
         }
     ],
     "require": {
-        "ruesin/config-utils":"dev-master",
+        "ruesin/utils":"dev-master",
         "predis/predis": "^1.1",
         "ext-json" : "*"
     },
     "autoload": {
-        "psr-4": {
-            "Ruesin\\Utils\\Redis\\":"src/"
-        }
+        "files": ["./src/Redis.php"]
     }
 }
