@@ -65,16 +65,25 @@ class Redis
         return new \Predis\Client($parameters, $options);
     }
 
+    public static function closeAll()
+    {
+        foreach (self::$_instance as $name => $val) {
+            self::clearInstance($name);
+        }
+    }
+
     public static function close($key = '', $config = [])
     {
-        $config = self::getConfig($key, $config);
-        $name = self::configToName($config);
+        return self::clearInstance(self::configToName(self::getConfig($key, $config)));
+    }
 
-        if (isset(self::$_instance[$name])) {
-            self::$_instance[$name]->quit();
-            self::$_instance[$name] = null;
-            unset(self::$_instance[$name]);
-        }
+    private static function clearInstance($name)
+    {
+        if (!isset(self::$_instance[$name])) return true;
+
+        self::$_instance[$name]->quit();
+        self::$_instance[$name] = null;
+        unset(self::$_instance[$name]);
         return true;
     }
 
