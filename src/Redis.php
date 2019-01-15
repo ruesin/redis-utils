@@ -89,22 +89,25 @@ class Redis
 
     private static function getConfig($key, $config)
     {
-        if (!$key) {
-            if (!empty($config)) {
-                return $config;
-            }
+        if (!empty($config)) {
+            return $config;
         }
+
         $redisConfig = Config::get('redis', []);
         if (empty($redisConfig)) return [];
 
+        if (array_key_exists($key, $redisConfig)) {
+            return $redisConfig[$key];
+        }
+
         if (count($redisConfig) == count($redisConfig, COUNT_RECURSIVE) && array_key_exists('host', $redisConfig)) {
             return $redisConfig;
-        } else {
-            while (!empty($redisConfig)) {
-                $tempConfig = array_shift($redisConfig);
-                if (is_array($tempConfig) && array_key_exists('host', $tempConfig)) {
-                    return $tempConfig;
-                }
+        }
+
+        while (!empty($redisConfig)) {
+            $tempConfig = array_shift($redisConfig);
+            if (is_array($tempConfig) && array_key_exists('host', $tempConfig)) {
+                return $tempConfig;
             }
         }
         return [];
