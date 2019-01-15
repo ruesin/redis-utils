@@ -29,7 +29,7 @@ class Redis
             return false;
         }
 
-        $name = self::configToName($config);
+        $name = self::geInstancetName($key, $config);
 
         if (!isset(self::$_instance[$name])) {
             self::$_instance[$name] = self::connect($config);
@@ -74,7 +74,7 @@ class Redis
 
     public static function close($key = '', $config = [])
     {
-        return self::clearInstance(self::configToName(self::getConfig($key, $config)));
+        return self::clearInstance(self::geInstancetName($key, self::getConfig($key, $config)));
     }
 
     private static function clearInstance($name)
@@ -112,6 +112,11 @@ class Redis
             }
         }
         return [];
+    }
+
+    private static function geInstancetName($key, $config)
+    {
+        return $key ? : self::configToName($config);
     }
 
     private static function configToName($config)
