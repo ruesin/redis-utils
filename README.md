@@ -1,6 +1,10 @@
 # Redis-Utils
 基于[predis](https://github.com/nrk/predis)的Redis工具类。
 
+## 依赖
+- [predis/predis](https://github.com/nrk/predis)
+- [ruesin/utils](https://github.com/ruesin/utils)
+
 ## 使用
 使用`\Ruesin\Utils\Redis::getInstance($key,$config)`获取`\Predis\Client`实例。
 - 参数`$key`可选，如果有值，则获取Config配置项中`redis.$key`的配置。
