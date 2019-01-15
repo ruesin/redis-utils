@@ -80,8 +80,9 @@ class Redis
     private static function clearInstance($name)
     {
         if (!isset(self::$_instance[$name])) return true;
-
-        self::$_instance[$name]->quit();
+        if (self::$_instance[$name] instanceof \Predis\ClientInterface) {
+            self::$_instance[$name]->disconnect();
+        }
         self::$_instance[$name] = null;
         unset(self::$_instance[$name]);
         return true;
