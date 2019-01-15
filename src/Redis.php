@@ -95,7 +95,7 @@ class Redis
         }
 
         if ($key) {
-            return Config::get('mysql.'.$key);
+            return Config::get('redis.'.$key);
         }
 
         $redisConfig = Config::get('redis', []);
