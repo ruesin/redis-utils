@@ -22,5 +22,8 @@ $redis = \Ruesin\Utils\Redis::getInstance();
 $redis->set('no_config_name', 'ruesin');
 echo $redis->get('no_config_name').PHP_EOL;
 
+\Ruesin\Utils\Redis::getInstance()->set('normal_key', 'normal_value');
+echo \Ruesin\Utils\Redis::getInstance()->get('normal_key');
+
 //关闭所有连接
 \Ruesin\Utils\Redis::closeAll();

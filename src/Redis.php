@@ -10,8 +10,14 @@ class Redis
 {
     private static $_instance = null;
 
-    private function __construct()
+    /**
+     * @var \Predis\ClientInterface
+     */
+    private $connect = null;
+
+    private function __construct($config)
     {
+        $this->connect = $this->connect($config);
     }
 
     private function __clone()
@@ -19,26 +25,23 @@ class Redis
     }
 
     /**
-     * @return \Predis\ClientInterface | bool
+     * @return \Predis\ClientInterface | bool | self
      */
     public static function getInstance($key = '', $config = [])
     {
         $config = self::getConfig($key, $config);
-
         if (empty($config)) {
             return false;
         }
-
         $name = self::geInstancetName($key, $config);
 
         if (!isset(self::$_instance[$name])) {
-            self::$_instance[$name] = self::connect($config);
+            self::$_instance[$name] = new self($config);
         }
-
         return self::$_instance[$name];
     }
 
-    private static function connect($config)
+    private function connect($config)
     {
         $parameters = [
             'host' => $config['host'],
@@ -80,9 +83,7 @@ class Redis
     private static function clearInstance($name)
     {
         if (!isset(self::$_instance[$name])) return true;
-        if (self::$_instance[$name] instanceof \Predis\ClientInterface) {
-            self::$_instance[$name]->disconnect();
-        }
+        self::$_instance[$name]->disconnect();
         self::$_instance[$name] = null;
         unset(self::$_instance[$name]);
         return true;
@@ -126,6 +127,14 @@ class Redis
     private static function configToName($config)
     {
         return md5(json_encode($config));
+    }
+
+    public function __call($name, $arguments)
+    {
+        if (empty($this->connect) || ! $this->connect instanceof \Predis\ClientInterface) {
+            return false;
+        }
+        return call_user_func_array([$this->connect, $name], $arguments);
     }
 }
 
