@@ -13,11 +13,11 @@ class Redis
     /**
      * @var \Predis\ClientInterface
      */
-    private $connect = null;
+    private $connection = null;
 
     private function __construct($config)
     {
-        $this->connect = $this->connect($config);
+        $this->connection = $this->connect($config);
     }
 
     private function __clone()
@@ -131,10 +131,10 @@ class Redis
 
     public function __call($name, $arguments)
     {
-        if (empty($this->connect) || ! $this->connect instanceof \Predis\ClientInterface) {
+        if (empty($this->connection) || ! $this->connection instanceof \Predis\ClientInterface) {
             return false;
         }
-        return call_user_func_array([$this->connect, $name], $arguments);
+        return call_user_func_array([$this->connection, $name], $arguments);
     }
 }
 
