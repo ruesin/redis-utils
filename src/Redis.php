@@ -134,9 +134,9 @@ class Redis
         if (empty($this->connection) || ! $this->connection instanceof \Predis\ClientInterface) {
             return false;
         }
-        if (!method_exists($this->connection, $name)) {
+        /*if (!method_exists($this->connection, $name)) {
             return false;
-        }
+        }*/
         return call_user_func_array([$this->connection, $name], $arguments);
     }
 }
