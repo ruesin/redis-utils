@@ -1,17 +1,42 @@
 # Redis-Utils
-基于[predis](https://github.com/nrk/predis)的Redis工具类。
+基于[predis](https://github.com/nrk/predis)的单例类，没有对`Predis`做任何修改，仅为了方便使用而加了层单例壳。
 
-## 依赖
-- [predis/predis](https://github.com/nrk/predis)
-- [ruesin/utils](https://github.com/ruesin/utils)
+1. 使用`setConfig($name, $config)`加载配置到静态属性`$configs`中，`$name`为连接名，`$config`为连接选项参数
+2. 使用`getInstance($name)`获取指定连接名`$name`的`\Predis\Client`实例
+3. 获取的即为`\Predis\Client`实例，直接[使用](https://github.com/nrk/predis)即可
 
-## 使用
-使用`\Ruesin\Utils\Redis::getInstance($key,$config)`获取`\Predis\Client`实例。
-- 参数`$key`可选，如果有值，则获取Config配置项中`redis.$key`的配置。
-- 参数`$config`可选，如果有值，优先使用此配置。
-- 如果`$key`和`$config`都没有值，则会从`Config::get('redis')`中获取第一个一维数组。即`redis`如果是一维数组则直接用`redis`配置，否则取第一个数组。 
+```php
+$configs = [
+    'default' => [
+        'host' => '127.0.0.1',
+        'port' => '6379',
+        'database' => '0',
+        'username' => '',
+        'password' => '',
+        'prefix' => 'default:'
+    ],
+    'web' => [
+        'host' => '127.0.0.1',
+        'port' => '6379',
+        'database' => '0',
+        'username' => '',
+        'password' => '',
+        'prefix' => 'web:'
+    ]
+];
+//加载配置到静态属性
+foreach ($configs as $key => $config) {
+    \Ruesin\Utils\Redis::setConfig($key, $config);
+}
 
+//获取实例
+$redis = \Ruesin\Utils\Redis::getInstance('default');
+$redis->set('name', 'ruesin');
+echo $redis->get('name') . PHP_EOL;
 
-使用`\Ruesin\Utils\Redis::close($key,$config)`关闭指定连接。
+//关闭连接
+\Ruesin\Utils\Redis::close('default');
 
-使用`\Ruesin\Utils\Redis::closeAll()`关闭全部连接。
+//清理所有连接
+\Ruesin\Utils\Redis::clear();
+```

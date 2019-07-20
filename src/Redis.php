@@ -8,16 +8,41 @@ namespace Ruesin\Utils;
  */
 class Redis
 {
-    private static $_instance = null;
+    /**
+     * All Configs
+     *
+     * @var array
+     */
+    private static $configs = [];
 
     /**
-     * @var \Predis\ClientInterface
+     * All instance
+     * @var array
+     */
+    private static $instances = null;
+
+    /**
+     * Connection name
+     * @var null
+     */
+    private $name = null;
+
+    /**
+     * @var \Predis\Client
      */
     private $connection = null;
 
-    private function __construct($config)
+    /**
+     * Connection config
+     * @var array
+     */
+    private $config = [];
+
+    private function __construct($name)
     {
-        $this->connection = $this->connect($config);
+        $this->name = $name;
+        $this->config = self::getConfig($this->name);
+        $this->connection = $this->connect($this->config);
     }
 
     private function __clone()
@@ -25,20 +50,15 @@ class Redis
     }
 
     /**
-     * @return \Predis\ClientInterface | bool | self
+     * @param $name
+     * @return \Predis\Client
      */
-    public static function getInstance($key = '', $config = [])
+    public static function getInstance($name)
     {
-        $config = self::getConfig($key, $config);
-        if (empty($config)) {
-            return false;
+        if (!isset(self::$instances[$name]) || !self::$instances[$name]) {
+            self::$instances[$name] = new self($name);
         }
-        $name = self::geInstancetName($key, $config);
-
-        if (!isset(self::$_instance[$name])) {
-            self::$_instance[$name] = new self($config);
-        }
-        return self::$_instance[$name];
+        return self::$instances[$name];
     }
 
     private function connect($config)
@@ -68,70 +88,46 @@ class Redis
         return new \Predis\Client($parameters, $options);
     }
 
-    public static function closeAll()
+    /**
+     * @param string $name
+     * @param array $config
+     * @param bool $rewrite
+     */
+    public static function setConfig($name, array $config, $rewrite = true)
     {
-        foreach (self::$_instance as $name => $val) {
-            self::clearInstance($name);
+        if (array_key_exists($name, self::$configs) && $rewrite !== true) return;
+        self::$configs[$name] = $config;
+    }
+
+    /**
+     * @param $key
+     * @return array
+     */
+    public static function getConfig($key)
+    {
+        return array_key_exists($key, self::$configs) ? self::$configs[$key] : [];
+    }
+
+
+    public static function clear()
+    {
+        foreach (self::$instances as $name => $instance) {
+            self::close($name);
         }
     }
 
-    public static function close($key = '', $config = [])
+    public static function close($name)
     {
-        return self::clearInstance(self::geInstancetName($key, self::getConfig($key, $config)));
-    }
-
-    private static function clearInstance($name)
-    {
-        if (!isset(self::$_instance[$name])) return true;
-        self::$_instance[$name]->disconnect();
-        self::$_instance[$name] = null;
-        unset(self::$_instance[$name]);
+        if (!isset(self::$instances[$name])) return true;
+        self::$instances[$name]->disconnect();
+        self::$instances[$name] = null;
+        unset(self::$instances[$name]);
         return true;
-    }
-
-    private static function getConfig($key, $config)
-    {
-        if (!empty($config)) {
-            return $config;
-        }
-
-        if ($key) {
-            return Config::get('redis.'.$key);
-        }
-
-        $redisConfig = Config::get('redis', []);
-        if (empty($redisConfig)) return [];
-
-        if (array_key_exists($key, $redisConfig)) {
-            return $redisConfig[$key];
-        }
-
-        if (count($redisConfig) == count($redisConfig, COUNT_RECURSIVE) && array_key_exists('host', $redisConfig)) {
-            return $redisConfig;
-        }
-
-        while (!empty($redisConfig)) {
-            $tempConfig = array_shift($redisConfig);
-            if (is_array($tempConfig) && array_key_exists('host', $tempConfig)) {
-                return $tempConfig;
-            }
-        }
-        return [];
-    }
-
-    private static function geInstancetName($key, $config)
-    {
-        return $key ? : self::configToName($config);
-    }
-
-    private static function configToName($config)
-    {
-        return md5(json_encode($config));
     }
 
     public function __call($name, $arguments)
     {
-        if (empty($this->connection) || ! $this->connection instanceof \Predis\ClientInterface) {
+        if (empty($this->connection) || !$this->connection instanceof \Predis\ClientInterface) {
             return false;
         }
         /*if (!method_exists($this->connection, $name)) {

@@ -1,23 +1,21 @@
 {
-    "name": "ruesin/redis",
-    "description": "Redis utils classes",
-    "keywords": ["utils", "redis"],
-    "homepage": "https://github.com/ruesin",
-    "license": "Apache-2.0",
-    "authors": [
-        {
-            "name": "Ruesin Liu",
-            "email": "ruesin@gmail.com"
-        }
-    ],
-    "require": {
-        "ruesin/utils": "^1.0",
-        "predis/predis": "^1.1",
-        "ext-json" : "*"
-    },
-    "autoload": {
-        "psr-4": {
-            "Ruesin\\Utils\\":"src/"
-        }
+  "name": "ruesin/redis",
+  "description": "Redis utils classes",
+  "keywords": ["utils", "redis"],
+  "homepage": "https://github.com/ruesin",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Ruesin Liu",
+      "email": "ruesin@gmail.com"
     }
+  ],
+  "require": {
+    "predis/predis": "^1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ruesin\\Utils\\": "src/"
+    }
+  }
 }
