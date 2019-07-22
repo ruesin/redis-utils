@@ -38,10 +38,10 @@ class Redis
      */
     private $config = [];
 
-    private function __construct($name)
+    private function __construct($name, $config)
     {
         $this->name = $name;
-        $this->config = self::getConfig($this->name);
+        $this->config = $config ?: self::getConfig($this->name);
         $this->connection = $this->connect($this->config);
     }
 
@@ -51,12 +51,13 @@ class Redis
 
     /**
      * @param $name
-     * @return \Predis\Client
+     * @param array $config
+     * @return Redis | \Predis\Client
      */
-    public static function getInstance($name)
+    public static function getInstance($name, $config = [])
     {
         if (!isset(self::$instances[$name]) || !self::$instances[$name]) {
-            self::$instances[$name] = new self($name);
+            self::$instances[$name] = new self($name, $config);
         }
         return self::$instances[$name];
     }
@@ -100,14 +101,22 @@ class Redis
     }
 
     /**
-     * @param $key
+     * @param $name
      * @return array
      */
-    public static function getConfig($key)
+    public static function getConfig($name)
     {
-        return array_key_exists($key, self::$configs) ? self::$configs[$key] : [];
+        return array_key_exists($name, self::$configs) ? self::$configs[$name] : [];
     }
 
+    /**
+     * @param $name
+     */
+    public static function delConfig($name)
+    {
+        self::$configs[$name] = null;
+        unset(self::$configs[$name]);
+    }
 
     public static function clear()
     {
