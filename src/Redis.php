@@ -57,9 +57,19 @@ class Redis
     public static function getInstance($name, $config = [])
     {
         if (!isset(self::$instances[$name]) || !self::$instances[$name]) {
-            self::$instances[$name] = new self($name, $config);
+            self::$instances[$name] = self::createInstance($name, $config);
         }
         return self::$instances[$name];
+    }
+
+    /**
+     * @param $name
+     * @param array $config
+     * @return Redis | \Predis\Client
+     */
+    public static function createInstance($name, $config = [])
+    {
+        return new self($name, $config);
     }
 
     private function connect($config)
