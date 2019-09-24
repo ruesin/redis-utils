@@ -2,6 +2,8 @@
 
 namespace Ruesin\Utils;
 
+use Swover\Pool\PoolFactory;
+
 /**
  * Class Redis
  * @see \Predis\Client
@@ -22,27 +24,14 @@ class Redis
     private static $instances = null;
 
     /**
-     * Connection name
-     * @var null
+     * @var PoolFactory|null
      */
-    private $name = null;
+    private $pool = null;
 
-    /**
-     * @var \Predis\Client
-     */
-    private $connection = null;
-
-    /**
-     * Connection config
-     * @var array
-     */
-    private $config = [];
-
-    private function __construct($name, $config)
+    private function __construct($name)
     {
-        $this->name = $name;
-        $this->config = $config ?: self::getConfig($this->name);
-        $this->connection = $this->connect($this->config);
+        $config = self::getConfig($name);
+        $this->pool = new PoolFactory($config, new PredisHandler($config));
     }
 
     private function __clone()
@@ -52,7 +41,7 @@ class Redis
     /**
      * @param $name
      * @param array $config
-     * @return Redis | \Predis\Client
+     * @return Redis | PoolFactory | \Predis\Client
      */
     public static function getInstance($name, $config = [])
     {
@@ -65,38 +54,14 @@ class Redis
     /**
      * @param $name
      * @param array $config
-     * @return Redis | \Predis\Client
+     * @return Redis | PoolFactory | \Predis\Client
      */
     public static function createInstance($name, $config = [])
     {
-        return new self($name, $config);
-    }
-
-    private function connect($config)
-    {
-        $parameters = [
-            'host' => $config['host'],
-            'port' => isset($config['port']) && $config['port'] ? $config['port'] : 6379,
-        ];
-
-        $options = [];
-        if (isset($config['options'])) {
-            $options = $config['options'];
+        if (!empty($config)) {
+            self::setConfig($name, $config);
         }
-
-        if (isset($config['prefix'])) {
-            $options['prefix'] = $config['prefix'];
-        }
-
-        if (isset($config['database'])) {
-            $options['parameters']['database'] = $config['database'];
-        }
-
-        if (isset($config['password']) && $config['password']) {
-            $options['parameters']['password'] = $config['password'];
-        }
-
-        return new \Predis\Client($parameters, $options);
+        return new self($name);
     }
 
     /**
@@ -128,31 +93,20 @@ class Redis
         unset(self::$configs[$name]);
     }
 
-    public static function clear()
+    public static function clear($name = null)
     {
-        foreach (self::$instances as $name => $instance) {
-            self::close($name);
+        $instances = $name === null ? self::$instances :
+            (isset(self::$instances[$name]) ? [$name => self::$instances[$name]] : []);
+        foreach ($instances as $name => $instance) {
+            self::$instances[$name] = null;
+            unset(self::$instances[$name]);
         }
-    }
-
-    public static function close($name)
-    {
-        if (!isset(self::$instances[$name])) return true;
-        self::$instances[$name]->disconnect();
-        self::$instances[$name] = null;
-        unset(self::$instances[$name]);
         return true;
     }
 
     public function __call($name, $arguments)
     {
-        if (empty($this->connection) || !$this->connection instanceof \Predis\ClientInterface) {
-            return false;
-        }
-        /*if (!method_exists($this->connection, $name)) {
-            return false;
-        }*/
-        return call_user_func_array([$this->connection, $name], $arguments);
+        return call_user_func_array([$this->pool, $name], $arguments);
     }
 }
 
